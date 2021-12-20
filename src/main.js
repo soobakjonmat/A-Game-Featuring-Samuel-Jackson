@@ -9,12 +9,13 @@ let loadingText = ""
 let fontWidth = 0
 let fontHeight = 20
 ctx.font = `${fontHeight}px Roboto Condensed`
-let loadingLoop = setInterval(showLoadingScreen, 1000)
+let loadingLoop = setInterval(showLoadingScreen, 500)
+
 
 function showLoadingScreen() {
     dotNum++
     ctx.clearRect(0, 0, cvs.width, cvs.height)
-    loadingText = `Loading${dotNum*"."}`
+    loadingText = `Loading${".".repeat(dotNum)}`
     fontWidth = ctx.measureText(loadingText).width
     ctx.fillText(loadingText, (cvs.width-fontWidth)/2, (cvs.height-fontHeight)/2)
     if (dotNum == 3) {
