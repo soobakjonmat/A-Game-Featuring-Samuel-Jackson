@@ -1,13 +1,16 @@
 import * as Input from "./input.js"
 import { Constants } from "./constants.js"
 import * as Resources from "./resources.js"
+import { Bar } from "./bar.js"
 
 export class Player {
-    constructor(ctx, img) {
+    constructor(ctx, game) {
         this.ctx = ctx
-        this.img = img
+        this.game = game
         
-        // Movement variables
+        this.img = Resources.images.sjhead
+
+        // Movement
         this.dir = 1
         this.moveSpeed = 9
         this.maxX = Constants.CANVAS_WIDTH - this.img.width
@@ -15,12 +18,12 @@ export class Player {
         this.x = 0
         this.y = this.groundY
 
-        // jump variables
+        // jump
         this.gravConst = -82
         this.jumpForce = 20
         this.jumpStartTime
         
-        // attack variables
+        // attack
         this.atkDuration = 0.1
         this.atkFwdSpeed = 40
         this.atkBckSpeed = 15
@@ -30,14 +33,14 @@ export class Player {
         this.thirdAtkCooldown = 1.34
         this.atkStartTime
 
-        // dash variables
+        // dash
         this.dashSpeed = 30
         this.dashDuration = 0.14
         this.dashCooldown = 1.5
         this.dashStartTime
 
-        // state variables
-        this.state = {
+        // status
+        this.status = {
             canMove: true,
             isJumping: false,
             isAttacking: false,
@@ -47,22 +50,16 @@ export class Player {
             isUsingUlt: false,
         }
 
-        // Bars
-        this.fontHeight = 14
-        this.HPBarYPos = 50
-        this.ultGaugeYPos = 80
-
-        // HP variables
-        this.curHP = 100
+        // HP
+        this.currHP = 100
         this.maxHP = 100
-        this.HPBarWidth = 120
-        this.HPBarHeight = 20
 
-        // ult gauge variables
-        this.curUltGauge = 0
+        // ult gauge
+        this.currUltGauge = 0
         this.maxUltGauge = 9
-        this.ultGaugeBarWidth = 120
-        this.ultGaugeBarHeight = 20
+
+        this.HPBar = new Bar(ctx, 30, 50, 120, 20, "#FF0000", "#000000", 1, "HP", 14, "#000000", "Roboto Condensed")
+        this.UltGaugeBar = new Bar(ctx, 30, 80, 120, 20, "#FFFF00", "#000000", 1, "Anger", 14, "#000000", "Roboto Condensed")
     }
 
     move() {
@@ -78,7 +75,7 @@ export class Player {
     jump() {
         let passedTime = (Date.now() - this.jumpStartTime) / 1000 // in seconds
         if (this.y > this.groundY) {
-            this.state.isJumping = false;
+            this.status.isJumping = false;
             this.y = this.groundY
             return
         }
@@ -88,8 +85,7 @@ export class Player {
     attack() {
         let passedTime = (Date.now() - this.atkStartTime) / 1000 // in seconds
         if (passedTime > this.atkDuration) {
-            this.state.isAttacking = false
-            this.state.canMove = true
+            this.status.isAttacking = false
             return
         }
         if (this.dir == 1) {
@@ -110,8 +106,7 @@ export class Player {
     dash() {
         let passedTime = (Date.now() - this.dashStartTime) / 1000 // in seconds
         if (passedTime > this.dashDuration) {
-            this.state.isDashing = false
-            this.state.canMove = true
+            this.status.isDashing = false
             return
         }
         if (this.dir == 1) {
@@ -122,23 +117,28 @@ export class Player {
     }
 
     checkAction() {
-        for (let key in this.state) {
-            if (this.state[key]) {
+        for (let key in this.status) {
+            if (this.status[key]) {
                 switch(key) {
                     case 'isJumping':
                         this.jump()
                         return true
                     case 'isAttacking':
-                        this.state.canMove = false
+                        this.status.canMove = false
                         this.attack()
                         return true
                     case 'isDashing':
-                        this.state.canMove = false
+                        this.status.canMove = false
                         this.dash()
+                        return true
+                    case 'isUsingUlt':
+                        this.status.canMove = false
+                        this.useUlt()
                         return true
                 }
             }
         }
+        this.status.canMove = true
         return false
     }
 
@@ -147,7 +147,7 @@ export class Player {
             if (Input.pressingKey[key]) {
                 switch(key) {
                     case 'Space':
-                        this.state.isJumping = true
+                        this.status.isJumping = true
                         this.jumpStartTime = Date.now()
                         this.jump()
                         return
@@ -156,8 +156,8 @@ export class Player {
                         if (atkPassedTime < this.atkCooldown) {
                             return
                         }
-                        this.state.isAttacking = true
-                        this.state.canMove = false
+                        this.status.isAttacking = true
+                        this.status.canMove = false
                         switch(this.attackCount) {
                             case 1:
                                 if (atkPassedTime < this.thirdAtkCooldown) {
@@ -175,8 +175,8 @@ export class Player {
                                 this.attackCount = 1
                                 break
                         }
-                        if (this.curUltGauge < this.maxUltGauge) {
-                            this.curUltGauge++
+                        if (this.currUltGauge < this.maxUltGauge) {
+                            this.currUltGauge++
                         }
                         this.atkStartTime = Date.now()
                         this.attack()
@@ -186,17 +186,17 @@ export class Player {
                         if (dashPassedTime < this.dashCooldown) {
                             return
                         }
-                        this.state.isDashing = true
-                        this.state.canMove = false
+                        this.status.isDashing = true
+                        this.status.canMove = false
                         this.dashStartTime = Date.now()
                         Resources.audios.dash.start()
                         this.dash()
                         return
                     case 'KeyX':
-                        if (this.curUltGauge >= this.maxUltGauge) {
-                            this.curUltGauge = 0
-                            // this.state.isUsingUlt = true
-                            // this.canMove = false
+                        if (this.currUltGauge >= this.maxUltGauge) {
+                            this.currUltGauge = 0
+                            this.status.isUsingUlt = true
+                            this.canMove = false
                             Resources.audios.ultStart.start()
                             this.useUlt()
                             return
@@ -208,6 +208,7 @@ export class Player {
     }
 
     useUlt() {
+        this.status.isUsingUlt = false
         // do ult move first then later do audios and images
         
     }
@@ -220,41 +221,12 @@ export class Player {
         }
     }
 
-    drawHPBar() {
-       // filling HP
-       this.ctx.fillStyle = "#ff0000"
-       this.ctx.beginPath()
-       this.ctx.rect(30, this.HPBarYPos, this.curHP*this.HPBarWidth/this.maxHP, this.HPBarHeight)
-       this.ctx.fill()
-       // gauge bar edge
-       this.ctx.beginPath()
-       this.ctx.strokeRect(30, this.HPBarYPos, this.HPBarWidth, this.HPBarHeight)
-       // text
-       this.ctx.font = `${this.fontHeight}px Roboto Condensed`
-       this.HPText = "HP"
-       this.HPTextSize = this.ctx.measureText(this.HPText)
-       this.ctx.fillStyle = "#000000"
-       this.ctx.fillText(this.HPText, 30+(this.HPBarWidth-this.HPTextSize.width)/2, this.HPBarYPos+this.fontHeight)
-   }
-
-    drawUltGaugeBar() {
-        // filling gauge
-        this.ctx.fillStyle = "#ffff00"
-        this.ctx.beginPath()
-        this.ctx.rect(30, this.ultGaugeYPos, this.curUltGauge*this.ultGaugeBarWidth/this.maxUltGauge, this.ultGaugeBarHeight)
-        this.ctx.fill()
-        // gauge bar edge
-        this.ctx.beginPath()
-        this.ctx.strokeRect(30, this.ultGaugeYPos, this.ultGaugeBarWidth, this.ultGaugeBarHeight)
-        // text
-        this.ctx.font = `${this.fontHeight}px Roboto Condensed`
-        this.ultText = "Anger"
-        this.ultTextSize = this.ctx.measureText(this.ultText)
-        this.ctx.fillStyle = "#000000"
-        this.ctx.fillText(this.ultText, 30+(this.ultGaugeBarWidth-this.ultTextSize.width)/2, this.ultGaugeYPos+this.fontHeight)
+    drawStats() {
+        this.HPBar.drawBar(this.currHP, this.maxHP)
+        this.UltGaugeBar.drawBar(this.currUltGauge, this.maxUltGauge)
     }
 
-    draw() {
+    drawPlayer() {
         if (this.dir == -1) {
             this.ctx.save()
             this.ctx.translate(this.x*2+this.img.width, 0)
@@ -268,12 +240,11 @@ export class Player {
         if (!this.checkAction()) {
             this.checkPressedKeys()
         }
-        if (this.state.canMove) {
+        if (this.status.canMove) {
             this.move()
         }
         this.restrictXPos()
-        this.drawHPBar()
-        this.drawUltGaugeBar()
-        this.draw()
+        this.drawPlayer()
+        this.drawStats()
     }
 }

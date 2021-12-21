@@ -1,4 +1,3 @@
-import * as Resources from "./resources.js"
 import * as Input from "./input.js"
 import { Player } from "./player.js"
 import { Enemy } from "./enemy.js"
@@ -8,6 +7,10 @@ export class Game {
         this.cvs = document.getElementById("cvs")
         this.ctx = this.cvs.getContext("2d")
 
+        this.enemies = []
+    }
+    
+    init() {
         function setKeyTrue(e) {
             Input.pressingKey[e.code] = true
         }
@@ -16,16 +19,14 @@ export class Game {
         }
         document.onkeydown = setKeyTrue
         document.onkeyup = setKeyFalse
-    }
-    
-    init() {
-        this.player = new Player(this.ctx, Resources.images.sjhead)
-        this.enemy = new Enemy(this.ctx, Resources.images.angryTrollFace)
+
+        this.player = new Player(this.ctx, this)
+        this.enemy = new Enemy(this.ctx, this)
     }
     
     run() {
         this.ctx.clearRect(0, 0, this.cvs.width, this.cvs.height)
-        this.enemy.render(this.player.x)
+        this.enemy.render()
         this.player.render()
         requestAnimationFrame(this.run.bind(this))
     }

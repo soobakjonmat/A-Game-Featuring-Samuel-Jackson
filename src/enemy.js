@@ -2,11 +2,12 @@ import { Constants } from "./constants.js"
 import * as Resources from "./resources.js"
 
 export class Enemy {
-    constructor(ctx, img) {
+    constructor(ctx, game) {
         this.ctx = ctx
-        this.img = img
+        this.game = game
         
-        // Movement variables
+        this.img = Resources.images.angryTrollFace        
+        // Movement
         this.dir = 1
         this.moveSpeed = 3
         this.maxX = Constants.CANVAS_WIDTH - this.img.width
@@ -14,13 +15,13 @@ export class Enemy {
         this.x = this.maxX - 300
         this.y = this.groundY
 
-        // jump variables
+        // jump
         this.gravConst = -82
         this.jumpForce = 17
         this.jumpStartTime
         this.nextJumpTime = Date.now() + Math.random()*4000+1000 // in milliseconds
 
-        // attack variables
+        // attack
         this.atkCoolddown = 11
         this.atkPauseTime = 1
         this.atkBckDuration = 0.08 + this.atkPauseTime
@@ -29,17 +30,17 @@ export class Enemy {
         this.atkBckSpeed = 8
         this.atkStartTime = Date.now()
 
-        // state variables
-        this.state = {
+        // status
+        this.status = {
             canMove: true,
             isJumping: false,
             isAttacking: false,
         }
     }
 
-    move(playerXPos) {
+    move() {
         this.dir = 1
-        if (playerXPos < this.x) {
+        if (this.game.player.x < this.x) {
             this.dir = -1
         }
         this.x += this.moveSpeed*this.dir
@@ -54,8 +55,8 @@ export class Enemy {
     }
 
     checkAction() {
-        for (let key in this.state) {
-            if (this.state[key]) {
+        for (let key in this.status) {
+            if (this.status[key]) {
                 switch(key) {
                     case 'isJumping':
                         this.jump()
@@ -70,18 +71,18 @@ export class Enemy {
     }
 
     startAction() {
-        let curTime = Date.now()
-        if ((curTime - this.atkStartTime) / 1000 > this.atkCoolddown) { // in seconds
-            this.state.isAttacking = true
-            this.state.canMove = false
-            this.atkStartTime = curTime
+        let currTime = Date.now()
+        if ((currTime - this.atkStartTime) / 1000 > this.atkCoolddown) { // in seconds
+            this.status.isAttacking = true
+            this.status.canMove = false
+            this.atkStartTime = currTime
             // play enemy attack scream audio
             this.attack()
             return
         }
-        if (curTime > this.nextJumpTime) {
-            this.state.isJumping = true
-            this.jumpStartTime = curTime
+        if (currTime > this.nextJumpTime) {
+            this.status.isJumping = true
+            this.jumpStartTime = currTime
             this.jump()
             return
         }
@@ -91,7 +92,7 @@ export class Enemy {
     jump() {
         let passedTime = (Date.now() - this.jumpStartTime) / 1000 // in seconds
         if (this.y > this.groundY) {
-            this.state.isJumping = false;
+            this.status.isJumping = false;
             this.y = this.groundY
             this.nextJumpTime = Date.now() + Math.random()*4000+1000 // in milliseconds
             return
@@ -106,8 +107,8 @@ export class Enemy {
         }
         if (passedTime > this.atkDuration) {
             if (passedTime > this.atkDuration + 1) {
-                this.state.isAttacking = false
-                this.state.canMove = true
+                this.status.isAttacking = false
+                this.status.canMove = true
                 return
             }
             return
@@ -138,12 +139,12 @@ export class Enemy {
     }
 
 
-    render(playerXPos) {
+    render() {
         if (!this.checkAction()) {
             this.startAction()
         }
-        if (this.state.canMove) {
-            this.move(playerXPos)
+        if (this.status.canMove) {
+            this.move()
         }
         this.restrictXPos()
         this.draw()
