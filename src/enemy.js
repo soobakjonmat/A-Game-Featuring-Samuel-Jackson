@@ -2,17 +2,21 @@ import { Constants } from "./constants.js"
 import * as Resources from "./resources.js"
 
 export class Enemy {
-    constructor(ctx, game) {
+    constructor(ctx, game, x) {
         this.ctx = ctx
         this.game = game
-        
-        this.img = Resources.images.angryTrollFace        
+
+        // image
+        this.img = Resources.images.angryTrollFace
+        this.img.width *= 0.8
+        this.img.height *= 0.8
+
         // Movement
         this.dir = 1
         this.moveSpeed = 3
         this.maxX = Constants.CANVAS_WIDTH - this.img.width
         this.groundY = Constants.CANVAS_HEIGHT - this.img.height
-        this.x = this.maxX - 300
+        this.x = x
         this.y = this.groundY
 
         // jump
@@ -128,13 +132,13 @@ export class Enemy {
         }
     }
 
-    draw() {
+    drawCharacter() {
         if (this.dir == -1) {
             this.ctx.save()
             this.ctx.translate(this.x*2+this.img.width, 0)
             this.ctx.scale(this.dir, 1)
         }
-        this.ctx.drawImage(this.img, this.x, this.y)
+        this.ctx.drawImage(this.img, this.x, this.y, this.img.width, this.img.height)
         this.ctx.restore()
     }
 
@@ -147,6 +151,6 @@ export class Enemy {
             this.move()
         }
         this.restrictXPos()
-        this.draw()
+        this.drawCharacter()
     }
 }

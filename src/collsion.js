@@ -17,12 +17,20 @@ export class Collision {
     }
 
     checkBoxCollision(aabbObj) {
-        let isLTCollsion = this.checkCollidePoint(aabbObj.xLeft, aabbObj.yTop);
-        let isRTCollsion = this.checkCollidePoint(aabbObj.xRight, aabbObj.yTop);
-        let isLBCollsion = this.checkCollidePoint(aabbObj.xLeft, aabbObj.yBottom);
-        let isRBCollsion = this.checkCollidePoint(aabbObj.xRight, aabbObj.yBottom);
+        let isLTCollided = this.checkCollidePoint(aabbObj.xLeft, aabbObj.yTop);
+        let isRTCollided = this.checkCollidePoint(aabbObj.xRight, aabbObj.yTop);
+        let isLBCollided = this.checkCollidePoint(aabbObj.xLeft, aabbObj.yBottom);
+        let isRBCollided = this.checkCollidePoint(aabbObj.xRight, aabbObj.yBottom);
 
-        return isLTCollsion || isRTCollsion || isLBCollsion || isRBCollsion
+        let status = {
+            collided: isLTCollided || isRTCollided || isLBCollided || isRBCollided,
+            LT: isLTCollided,
+            RT: isRTCollided,
+            LB: isLBCollided,
+            RB: isRBCollided,
+        }
+
+        return status
     }
 
     update(dx, dy) {
