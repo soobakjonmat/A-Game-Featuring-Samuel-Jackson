@@ -1,10 +1,10 @@
 {
     "compilerOptions": {
-        "target": "ES6",
+        "target": "ESNext",
         "module": "ESNext",
-        "outDir": "src"
+        "outDir": "src",
     },
-    "files": [
-        "src/bar.ts"
+    "include": [
+        "tsSrc/**/*"
     ]
 }

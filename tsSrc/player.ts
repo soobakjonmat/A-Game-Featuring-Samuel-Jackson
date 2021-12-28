@@ -3,14 +3,63 @@ import { Constants } from "./constants.js"
 import * as Resources from "./resources.js"
 import { Bar } from "./bar.js"
 import { Collision } from "./collision.js"
+import { Game } from "./game.js"
 
 export class Player {
-    constructor(ctx, game) {
+    ctx :CanvasRenderingContext2D
+    game :Game
+
+    img :HTMLImageElement
+
+    dir :number
+    moveSpeed :number
+    maxX :number
+    groundY :number
+    x :number
+    y :number
+    
+    gravConst :number
+    jumpForce :number
+    jumpStartTime :number
+    
+    atkDuration :number
+    atkFwdSpeed :number
+    atkBckSpeed :number
+    atkBckDuration :number
+    attackCount :number
+    atkCooldown :number
+    thirdAtkCooldown :number
+    atkStartTime :number
+    
+    dashSpeed :number
+    dashDuration :number
+    dashCooldown :number
+    dashStartTime :number
+    
+    ultDuration :number
+    ulStartTime :number
+    
+    knockBackStartTime :number
+
+    status: {
+        [key:string] : boolean
+    }
+
+    currHP :number
+    maxHP :number
+    
+    currUltGauge :number
+    maxUltGauge :number
+
+    HPBar :Bar
+    UltGaugeBar :Bar
+
+    constructor(ctx :CanvasRenderingContext2D, game :Game) {
         this.ctx = ctx
         this.game = game
         
         // image
-        this.img = Resources.images.sjhead
+        this.img = new Resources.images.sjhead
         this.img.width *= 1
         this.img.height *= 1
 
@@ -79,7 +128,7 @@ export class Player {
     // jump
     // move
 
-    collisionBox() {
+    collisionBox() :Collision {
         return new Collision(this.x, this.y, this.img.width, this.img.height)
     }
 
@@ -236,7 +285,7 @@ export class Player {
 
     }
 
-    knockBack(xDir) {
+    knockBack(xDir :number) {
 
     }
 
