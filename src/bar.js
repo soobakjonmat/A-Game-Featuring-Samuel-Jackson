@@ -1,5 +1,8 @@
 // just enter 'tsc' command to compile
 export class Bar {
+    ctx;
+    bar;
+    text;
     constructor(ctx, x, y, width, height, fillColor, edgeColor, edgeLineWeight, text, textHeight, textColor, textFont) {
         this.ctx = ctx;
         this.bar = {

@@ -2,15 +2,19 @@
 
 import { Constants } from "./constants.js"
 
-export let images = {
-    sjhead: HTMLImageElement,
-    gun: HTMLImageElement,
-    angryTrollFace: HTMLImageElement,
+class Image {
+    image: HTMLImageElement
+    constructor(src :string) {
+        this.image = document.createElement("img")
+        this.image.src = src
+    }
 }
 
-images.sjhead.prototype.src = "./images/sjhead.png"
-images.gun.prototype.src = "./images/gun.png"
-images.angryTrollFace.prototype.src = "./images/angryTrollFace.png"
+export let images = {
+    sjhead: new Image("./images/sjhead.png"),
+    gun: new Image("./images/gun.png"),
+    angryTrollFace: new Image("./images/angryTrollFace.png"),
+}
 
 class Audio {
     audio: HTMLAudioElement

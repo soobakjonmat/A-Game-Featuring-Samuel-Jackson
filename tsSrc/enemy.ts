@@ -37,7 +37,7 @@ export class Enemy {
         this.game = game
 
         // image
-        this.img = new Resources.images.angryTrollFace
+        this.img = Resources.images.angryTrollFace.image
         this.img.width *= 0.8
         this.img.height *= 0.8
 

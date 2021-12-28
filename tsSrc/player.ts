@@ -59,7 +59,7 @@ export class Player {
         this.game = game
         
         // image
-        this.img = new Resources.images.sjhead
+        this.img = Resources.images.sjhead.image
         this.img.width *= 1
         this.img.height *= 1
 

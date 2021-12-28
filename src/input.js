@@ -5,8 +5,7 @@ export let pressingKey = {
     KeyZ: false,
     KeyX: false,
     ShiftLeft: false
-}
-
+};
 export let keymap = {
     moveLeft: 'ArrowLeft',
     moveRight: 'ArrowRight',
@@ -14,5 +13,4 @@ export let keymap = {
     attack: 'KeyZ',
     ult: 'KeyX',
     dash: 'ShiftLeft',
-}
-
+};
