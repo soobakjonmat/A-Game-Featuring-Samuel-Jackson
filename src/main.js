@@ -27,8 +27,9 @@ function appendKeyGuide() {
 }
 appendKeyGuide();
 let loadingLoop = setInterval(showLoadingScreen, 500);
-window.onload = function () {
+function main() {
     clearInterval(loadingLoop);
     ctx.clearRect(0, 0, cvs.width, cvs.height);
     new Game().start();
-};
+}
+window.onload = main;

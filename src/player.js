@@ -56,8 +56,6 @@ export class Player {
         this.game = game;
         // image
         this.img = Resources.images.sjhead.image;
-        console.log(this.img)
-        console.log(typeof this.img)
         this.img.width *= 1;
         this.img.height *= 1;
         // Movement
