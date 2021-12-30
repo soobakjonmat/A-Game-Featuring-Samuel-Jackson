@@ -2,24 +2,24 @@
 
 import { Constants } from "./constants.js"
 
-class Image {
+class Img {
     image: HTMLImageElement
     constructor(src :string) {
-        this.image = document.createElement("img")
+        this.image = new Image()
         this.image.src = src
     }
 }
 
 export let images = {
-    sjhead: new Image("./images/sjhead.png"),
-    gun: new Image("./images/gun.png"),
-    angryTrollFace: new Image("./images/angryTrollFace.png"),
+    sjhead: new Img("./images/sjhead.png"),
+    gun: new Img("./images/gun.png"),
+    angryTrollFace: new Img("./images/angryTrollFace.png"),
 }
 
-class Audio {
+class Aud {
     audio: HTMLAudioElement
     constructor(src :string) {
-        this.audio = document.createElement("audio")
+        this.audio = new Audio()
         this.audio.src = src
     }
 
@@ -34,9 +34,9 @@ class Audio {
 }
 
 export let audios = {
-    punch1: new Audio("./audios/punch1.mp3"),
-    punch2: new Audio("./audios/punch2.mp3"),
-    punch3: new Audio("./audios/punch3.mp3"),
-    dash: new Audio("./audios/dash.mp3"),
-    ultStart: new Audio("./audios/hold onto your butts.mp3"),
+    punch1: new Aud("./audios/punch1.mp3"),
+    punch2: new Aud("./audios/punch2.mp3"),
+    punch3: new Aud("./audios/punch3.mp3"),
+    dash: new Aud("./audios/dash.mp3"),
+    ultStart: new Aud("./audios/hold onto your butts.mp3"),
 };
