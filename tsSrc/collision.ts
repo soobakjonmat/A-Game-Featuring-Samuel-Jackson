@@ -16,17 +16,17 @@ export class Collision {
 
     checkPointCollision(px :number, py :number) {
         if (px > this.xLeft && px < this.xRight && py > this.yTop && py < this.yBottom) {
-            return true;
+            return true
         } else {
-            return false;
+            return false
         }
     }
 
     checkBoxCollision(CollisionObj :Collision) {
-        const isLTCollided = this.checkPointCollision(CollisionObj.xLeft, CollisionObj.yTop);
-        const isRTCollided = this.checkPointCollision(CollisionObj.xRight, CollisionObj.yTop);
-        const isLBCollided = this.checkPointCollision(CollisionObj.xLeft, CollisionObj.yBottom);
-        const isRBCollided = this.checkPointCollision(CollisionObj.xRight, CollisionObj.yBottom);
+        const isLTCollided = this.checkPointCollision(CollisionObj.xLeft, CollisionObj.yTop)
+        const isRTCollided = this.checkPointCollision(CollisionObj.xRight, CollisionObj.yTop)
+        const isLBCollided = this.checkPointCollision(CollisionObj.xLeft, CollisionObj.yBottom)
+        const isRBCollided = this.checkPointCollision(CollisionObj.xRight, CollisionObj.yBottom)
 
         const status = {
             collided: isLTCollided || isRTCollided || isLBCollided || isRBCollided,

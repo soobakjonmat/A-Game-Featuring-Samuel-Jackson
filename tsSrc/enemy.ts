@@ -158,7 +158,7 @@ export class Enemy {
     }
 
     endJump() {
-        this.status.isJumping = false; 
+        this.status.isJumping = false
         this.nextJumpTime = Date.now() + Math.random()*4000+1000
     }
     

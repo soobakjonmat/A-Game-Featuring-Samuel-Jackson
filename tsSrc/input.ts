@@ -4,7 +4,7 @@ export let pressingKey = {
     Space: false,
     KeyZ: false,
     KeyX: false,
-    ShiftLeft: false
+    ShiftLeft: false,
 }
 
 export let keymap = {

@@ -5,4 +5,4 @@ export let Constants = {
     CANVAS_HEIGHT: cvs.height,
     sfxVolume: 1,
     isMuted: false,
-};
+}

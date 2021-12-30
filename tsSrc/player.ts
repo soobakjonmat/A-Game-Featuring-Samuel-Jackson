@@ -208,7 +208,7 @@ export class Player {
     }
 
     endJump() {
-        this.status.isJumping = false; 
+        this.status.isJumping = false
     }
 
     // Attack

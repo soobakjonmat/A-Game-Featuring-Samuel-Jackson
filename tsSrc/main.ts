@@ -1,5 +1,5 @@
 import { Game } from "./game.js"
-import {keymap} from "./input.js"
+import { keymap } from "./input.js"
 
 let cvs = <HTMLCanvasElement> document.getElementById("cvs")
 let ctx :CanvasRenderingContext2D = cvs.getContext("2d")
@@ -31,8 +31,11 @@ function appendKeyGuide() {
 
 appendKeyGuide()
 let loadingLoop :number = setInterval(showLoadingScreen, 500)
-window.onload = function() {
+
+function main() {
     clearInterval(loadingLoop)
     ctx.clearRect(0, 0, cvs.width, cvs.height)
     new Game().start()
 }
+
+window.onload = main

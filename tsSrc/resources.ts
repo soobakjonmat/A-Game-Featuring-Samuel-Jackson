@@ -27,9 +27,9 @@ class Aud {
         if (Constants.isMuted) {
             return
         }
-        this.audio.volume = Constants.sfxVolume;
-        this.audio.currentTime = 0;
-        this.audio.play();
+        this.audio.volume = Constants.sfxVolume
+        this.audio.currentTime = 0
+        this.audio.play()
     }
 }
 
@@ -39,4 +39,4 @@ export let audios = {
     punch3: new Aud("./audios/punch3.mp3"),
     dash: new Aud("./audios/dash.mp3"),
     ultStart: new Aud("./audios/hold onto your butts.mp3"),
-};
+}
