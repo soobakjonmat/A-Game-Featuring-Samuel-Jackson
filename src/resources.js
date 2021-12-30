@@ -8,7 +8,7 @@ class Img {
     }
 }
 export let images = {
-    sjhead: new Img("./images/sjhead.png"),
+    sjhead: new Img("./images/SJhead.png"),
     gun: new Img("./images/gun.png"),
     angryTrollFace: new Img("./images/angryTrollFace.png"),
 };
