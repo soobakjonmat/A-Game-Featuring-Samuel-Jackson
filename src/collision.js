@@ -22,11 +22,11 @@ export class Collision {
         }
     }
     checkBoxCollision(CollisionObj) {
-        let isLTCollided = this.checkPointCollision(CollisionObj.xLeft, CollisionObj.yTop);
-        let isRTCollided = this.checkPointCollision(CollisionObj.xRight, CollisionObj.yTop);
-        let isLBCollided = this.checkPointCollision(CollisionObj.xLeft, CollisionObj.yBottom);
-        let isRBCollided = this.checkPointCollision(CollisionObj.xRight, CollisionObj.yBottom);
-        let status = {
+        const isLTCollided = this.checkPointCollision(CollisionObj.xLeft, CollisionObj.yTop);
+        const isRTCollided = this.checkPointCollision(CollisionObj.xRight, CollisionObj.yTop);
+        const isLBCollided = this.checkPointCollision(CollisionObj.xLeft, CollisionObj.yBottom);
+        const isRBCollided = this.checkPointCollision(CollisionObj.xRight, CollisionObj.yBottom);
+        const status = {
             collided: isLTCollided || isRTCollided || isLBCollided || isRBCollided,
             LT: isLTCollided,
             RT: isRTCollided,
@@ -35,10 +35,10 @@ export class Collision {
         };
         return status;
     }
-    update(dx, dy) {
-        this.xLeft += dx;
-        this.xRight += dx;
-        this.yTop += dy;
-        this.yBottom += dy;
+    update(x, y) {
+        this.xLeft = x;
+        this.xRight = x + this.width;
+        this.yTop = y;
+        this.yBottom = y + this.height;
     }
 }

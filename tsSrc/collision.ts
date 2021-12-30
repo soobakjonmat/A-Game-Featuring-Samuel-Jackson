@@ -14,7 +14,7 @@ export class Collision {
         this.height = h
     }
 
-    checkPointCollision(px :number, py :number) :boolean {
+    checkPointCollision(px :number, py :number) {
         if (px > this.xLeft && px < this.xRight && py > this.yTop && py < this.yBottom) {
             return true;
         } else {
@@ -22,27 +22,26 @@ export class Collision {
         }
     }
 
-    checkBoxCollision(CollisionObj :Collision) :object {
-        let isLTCollided = this.checkPointCollision(CollisionObj.xLeft, CollisionObj.yTop);
-        let isRTCollided = this.checkPointCollision(CollisionObj.xRight, CollisionObj.yTop);
-        let isLBCollided = this.checkPointCollision(CollisionObj.xLeft, CollisionObj.yBottom);
-        let isRBCollided = this.checkPointCollision(CollisionObj.xRight, CollisionObj.yBottom);
+    checkBoxCollision(CollisionObj :Collision) {
+        const isLTCollided = this.checkPointCollision(CollisionObj.xLeft, CollisionObj.yTop);
+        const isRTCollided = this.checkPointCollision(CollisionObj.xRight, CollisionObj.yTop);
+        const isLBCollided = this.checkPointCollision(CollisionObj.xLeft, CollisionObj.yBottom);
+        const isRBCollided = this.checkPointCollision(CollisionObj.xRight, CollisionObj.yBottom);
 
-        let status = {
+        const status = {
             collided: isLTCollided || isRTCollided || isLBCollided || isRBCollided,
             LT: isLTCollided,
             RT: isRTCollided,
             LB: isLBCollided,
             RB: isRBCollided,
         }
-
         return status
     }
 
-    update(dx :number, dy :number) {
-        this.xLeft += dx
-        this.xRight += dx
-        this.yTop += dy
-        this.yBottom += dy
+    update(x :number, y :number) {
+        this.xLeft = x
+        this.xRight = x + this.width
+        this.yTop = y
+        this.yBottom = y + this.height
     }
 }

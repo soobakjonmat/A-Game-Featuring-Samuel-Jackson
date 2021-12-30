@@ -1,8 +1,10 @@
-// just enter 'tsc' command to compile
-export class Bar {
+import * as commonFuncs from "./commonFuncs.js";
+export class textBar {
     ctx;
     bar;
     text;
+    textBarRelConstX;
+    textBarRelConstY;
     constructor(ctx, x, y, width, height, fillColor, edgeColor, edgeLineWeight, text, textHeight, textColor, textFont) {
         this.ctx = ctx;
         this.bar = {
@@ -23,16 +25,26 @@ export class Bar {
             color: textColor,
             font: textFont,
         };
-        this.updateTextPos();
-    }
-    updateTextPos() {
         this.ctx.font = `${this.text.height}px ${this.text.font}`;
         this.text.width = this.ctx.measureText(this.text.text).width;
-        this.text.x = this.bar.x + this.getRelativeCenter(this.bar.width, this.text.width);
-        this.text.y = this.bar.y + this.text.height + this.getRelativeCenter(this.bar.height, this.text.height);
+        this.textBarRelConstX = commonFuncs.getHalfDiff(this.bar.width, this.text.width);
+        this.textBarRelConstY = commonFuncs.getHalfDiff(this.bar.height, this.text.height);
+        this.text.x = this.bar.x + this.textBarRelConstX;
+        this.text.y = this.bar.y + this.text.height + this.textBarRelConstY;
     }
-    getRelativeCenter(bigger, smaller) {
-        return (bigger - smaller) / 2;
+    updatePos(x, y) {
+        this.bar.x = x;
+        this.bar.y = y;
+        this.text.x = this.bar.x + this.textBarRelConstX;
+        this.text.y = this.bar.y + this.text.height + this.textBarRelConstY;
+    }
+    draw(currValue, maxValue, yesBar, yesText) {
+        if (yesBar) {
+            this.drawBar(currValue, maxValue);
+        }
+        if (yesText) {
+            commonFuncs.drawText(this.ctx, this.text.text, this.text.x, this.text.y, 0, this.text.height, this.text.color, this.text.font);
+        }
     }
     drawBar(currValue, maxValue) {
         // bar
@@ -45,10 +57,5 @@ export class Bar {
         this.ctx.strokeStyle = this.bar.edgeColor;
         this.ctx.beginPath();
         this.ctx.strokeRect(this.bar.x, this.bar.y, this.bar.width, this.bar.height);
-        // text
-        this.ctx.fillStyle = this.text.color;
-        this.ctx.font = `${this.text.height}px ${this.text.font}`;
-        this.ctx.beginPath();
-        this.ctx.fillText(this.text.text, this.text.x, this.text.y);
     }
 }

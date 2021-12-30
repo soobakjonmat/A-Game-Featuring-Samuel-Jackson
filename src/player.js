@@ -1,7 +1,7 @@
 import * as Input from "./input.js";
 import { Constants } from "./constants.js";
 import * as Resources from "./resources.js";
-import { Bar } from "./bar.js";
+import { textBar } from "./textBar.js";
 import { Collision } from "./collision.js";
 export class Player {
     ctx;
@@ -13,10 +13,11 @@ export class Player {
     groundY;
     x;
     y;
+    offGroundStartTime;
     gravConst;
     jumpForce;
-    jumpStartTime;
-    atkDuration;
+    atkDamage;
+    atkDur;
     atkFwdSpeed;
     atkBckSpeed;
     atkBckDuration;
@@ -29,14 +30,26 @@ export class Player {
     dashCooldown;
     dashStartTime;
     ultDuration;
+    ultCooldown;
     ulStartTime;
+    knockBackDur;
     knockBackStartTime;
+    knockBackForceY;
+    knockBackForceX;
+    knockBackDir;
+    collisionBox;
+    invinStartTime;
+    invinDur;
+    isOpaque;
+    blinkOpaChangeTime;
+    blinkFreq;
+    blinkOpacity;
     status;
     currHP;
     maxHP;
+    HPBar;
     currUltGauge;
     maxUltGauge;
-    HPBar;
     UltGaugeBar;
     constructor(ctx, game) {
         this.ctx = ctx;
@@ -52,64 +65,91 @@ export class Player {
         this.groundY = Constants.CANVAS_HEIGHT - this.img.height;
         this.x = 50;
         this.y = this.groundY;
+        // gravity
+        this.offGroundStartTime = 0;
+        this.gravConst = 0.082;
         // jump
-        this.gravConst = -82;
         this.jumpForce = 20;
-        this.jumpStartTime = Date.now();
         // attack
-        this.atkDuration = 0.1;
+        this.atkDamage = 7;
+        this.atkDur = 100;
         this.atkFwdSpeed = 40;
         this.atkBckSpeed = 15;
-        this.atkBckDuration = 0.02;
+        this.atkBckDuration = 20;
         this.attackCount = 1;
-        this.atkCooldown = 0.67;
-        this.thirdAtkCooldown = 1.34;
-        this.atkStartTime = Date.now();
+        this.atkCooldown = 670;
+        this.thirdAtkCooldown = 1340;
+        this.atkStartTime = 0;
         // dash
         this.dashSpeed = 50;
-        this.dashDuration = 0.12;
-        this.dashCooldown = 1.5;
-        this.dashStartTime = Date.now();
+        this.dashDuration = 120;
+        this.dashCooldown = 1500;
+        this.dashStartTime = 0;
         // ult
-        this.ultDuration = 4;
-        this.ulStartTime = Date.now();
+        this.ultCooldown = 12000;
+        this.ultDuration = 4000;
+        this.ulStartTime = 0;
         // knock back
-        this.knockBackStartTime = Date.now();
+        this.knockBackDur = 500;
+        this.knockBackStartTime = 0;
+        this.knockBackForceY = 12;
+        this.knockBackForceX = 7;
+        this.knockBackDir = 1;
+        // collision
+        this.collisionBox = new Collision(this.x, this.y, this.img.width, this.img.height);
+        this.invinDur = 1500;
+        this.invinStartTime = 0;
+        this.isOpaque = true;
+        this.blinkOpaChangeTime = 0;
+        this.blinkFreq = 100;
+        this.blinkOpacity = 0.5;
         // status
         this.status = {
             canMove: true,
-            canAct: true,
             isJumping: false,
             isAttacking: false,
             isDashing: false,
             isUsingUlt: false,
+            isInvincible: false,
+            isOffGround: false,
+            isGettingKnockBack: false,
         };
         // HP
-        this.currHP = 100;
-        this.maxHP = 100;
+        this.maxHP = 40;
+        this.currHP = this.maxHP;
+        this.HPBar = new textBar(ctx, 30, 50, 120, 20, "#FF0000", "#000000", 1, "HP", 14, "#000000", "Roboto Condensed");
         // ult gauge
         this.currUltGauge = 0;
         this.maxUltGauge = 9;
-        this.HPBar = new Bar(ctx, 30, 50, 120, 20, "#FF0000", "#000000", 1, "HP", 14, "#000000", "Roboto Condensed");
-        this.UltGaugeBar = new Bar(ctx, 30, 80, 120, 20, "#FFFF00", "#000000", 1, "Anger", 14, "#000000", "Roboto Condensed");
+        this.UltGaugeBar = new textBar(ctx, 30, 80, 120, 20, "#FFFF00", "#000000", 1, "Anger", 14, "#000000", "Roboto Condensed");
     }
-    // hierarchy for actions:
-    // ult
-    // attack
-    // dash
-    // jump
-    // move
-    collisionBox() {
-        return new Collision(this.x, this.y, this.img.width, this.img.height);
-    }
+    // Movement / X Position
     move() {
-        if (Input.pressingKey[Input.keymap.moveLeft]) {
-            this.dir = -1;
-            this.x += this.dir * this.moveSpeed;
+        if (this.status.canMove) {
+            if (Input.pressingKey[Input.keymap.moveLeft]) {
+                this.dir = -1;
+                this.x += this.dir * this.moveSpeed;
+            }
+            else if (Input.pressingKey[Input.keymap.moveRight]) {
+                this.dir = 1;
+                this.x += this.dir * this.moveSpeed;
+            }
         }
-        else if (Input.pressingKey[Input.keymap.moveRight]) {
-            this.dir = 1;
-            this.x += this.dir * this.moveSpeed;
+    }
+    // Gravity / Y Position
+    checkOffGround() {
+        if (this.y < this.groundY && !this.status.isOffGround) {
+            this.status.isOffGround = true;
+            this.offGroundStartTime = Date.now();
+        }
+        if (this.y >= this.groundY) {
+            this.y = this.groundY;
+            this.status.isOffGround = false;
+        }
+    }
+    applyGravity() {
+        if (this.status.isOffGround) {
+            this.y += this.gravConst * (Date.now() - this.offGroundStartTime);
         }
     }
     checkJumpKeyPress() {
@@ -118,27 +158,18 @@ export class Player {
         }
         return false;
     }
-    startJump() {
-        this.status.isJumping = true;
-        this.jumpStartTime = Date.now();
-        return true;
-    }
+    // Jump
     jump() {
-        let passedTime = (Date.now() - this.jumpStartTime) / 1000; // in seconds
-        if (this.y > this.groundY) {
-            this.status.isJumping = false;
-            this.y = this.groundY;
+        this.y += -this.jumpForce;
+        if (this.y >= this.groundY) {
+            this.endJump();
             return;
         }
-        this.y -= this.jumpForce + this.gravConst * passedTime;
     }
-    applyGravity() {
-        if (this.y == this.groundY) {
-        }
+    endJump() {
+        this.status.isJumping = false;
     }
-    // make apply gravity function
-    // if y pos is above ground set offGroundStartTime = Date.now()
-    // after action end, set offGroundStartTime = Date.now()
+    // Attack
     checkAttackKeyPress() {
         if (Input.pressingKey[Input.keymap.attack]) {
             return true;
@@ -146,10 +177,11 @@ export class Player {
         return false;
     }
     startAttack() {
-        let atkPassedTime = (Date.now() - this.atkStartTime) / 1000; // in seconds
+        const atkPassedTime = Date.now() - this.atkStartTime;
         if (atkPassedTime < this.atkCooldown) {
             return false;
         }
+        Resources.audios.dash.start();
         this.status.isAttacking = true;
         this.status.canMove = false;
         switch (this.attackCount) {
@@ -157,31 +189,30 @@ export class Player {
                 if (atkPassedTime < this.thirdAtkCooldown) {
                     return false;
                 }
-                Resources.audios.punch1.start();
                 this.attackCount++;
                 break;
             case 2:
-                Resources.audios.punch2.start();
                 this.attackCount++;
                 break;
             case 3:
-                Resources.audios.punch3.start();
                 this.attackCount = 1;
                 break;
+        }
+        if (this.currUltGauge < this.maxUltGauge) {
+            this.currUltGauge++;
         }
         this.atkStartTime = Date.now();
         return true;
     }
     attack() {
-        let passedTime = (Date.now() - this.atkStartTime) / 1000; // in seconds
-        if (passedTime > this.atkDuration) {
-            this.status.isAttacking = false;
-            this.status.canMove = true;
+        const passedTime = Date.now() - this.atkStartTime;
+        if (passedTime > this.atkDur) {
+            this.endAttack();
             return;
         }
         if (this.dir == 1) {
             if (passedTime < this.atkBckDuration) {
-                this.x -= this.atkBckSpeed;
+                this.x += -this.atkBckSpeed;
             }
             else {
                 this.x += this.atkFwdSpeed;
@@ -192,10 +223,15 @@ export class Player {
                 this.x += this.atkBckSpeed;
             }
             else {
-                this.x -= this.atkFwdSpeed;
+                this.x += -this.atkFwdSpeed;
             }
         }
     }
+    endAttack() {
+        this.status.isAttacking = false;
+        this.status.canMove = true;
+    }
+    // Dash
     checkDashKeyPress() {
         if (Input.pressingKey[Input.keymap.dash]) {
             return true;
@@ -203,7 +239,7 @@ export class Player {
         return false;
     }
     startDash() {
-        let dashPassedTime = (Date.now() - this.dashStartTime) / 1000; // in seconds
+        const dashPassedTime = Date.now() - this.dashStartTime;
         if (dashPassedTime < this.dashCooldown) {
             return false;
         }
@@ -214,19 +250,23 @@ export class Player {
         return true;
     }
     dash() {
-        let passedTime = (Date.now() - this.dashStartTime) / 1000; // in seconds
+        const passedTime = Date.now() - this.dashStartTime;
         if (passedTime > this.dashDuration) {
-            this.status.isDashing = false;
-            this.status.canMove = true;
+            this.endDash();
             return;
         }
         if (this.dir == 1) {
             this.x += this.dashSpeed;
         }
         else {
-            this.x -= this.dashSpeed;
+            this.x += -this.dashSpeed;
         }
     }
+    endDash() {
+        this.status.isDashing = false;
+        this.status.canMove = true;
+    }
+    // Ult
     checkUltKeyPress() {
         if (Input.pressingKey[Input.keymap.ult]) {
             return true;
@@ -234,6 +274,10 @@ export class Player {
         return false;
     }
     startUlt() {
+        if (this.currUltGauge != this.maxUltGauge) {
+            return false;
+        }
+        this.currUltGauge = 0;
         Resources.audios.ultStart.start();
         this.status.isUsingUlt = true;
         return true;
@@ -242,70 +286,144 @@ export class Player {
         this.status.isUsingUlt = false;
         // do ult move first then later do audios and images
     }
+    // Knockback
     startKnockBack() {
+        this.status.canMove = false;
+        this.status.isAttacking = false;
+        this.status.isJumping = false;
+        this.status.isInvincible = true;
+        this.invinStartTime = Date.now();
+        this.status.isGettingKnockBack = true;
+        this.knockBackStartTime = this.invinStartTime;
     }
-    knockBack(xDir) {
+    // figure out why characters bounce several times when applied gravity and knockbacked
+    /* figure out why sometimes when player is attacking, enemy is not attacking
+        but player status is deemed as not attacking*/
+    knockBack() {
+        this.x += this.knockBackForceX * this.knockBackDir;
+        this.y += -this.knockBackForceY;
+        if (Date.now() - this.knockBackStartTime > this.knockBackDur) {
+            this.endKnockBack();
+            return;
+        }
     }
-    checkAction() {
+    endKnockBack() {
+        this.status.isGettingKnockBack = false;
+        this.status.canMove = true;
+    }
+    playRandomPunchSound() {
+        const punchNum = Math.floor(Math.random() * 3) + 1;
+        switch (punchNum) {
+            case 1:
+                Resources.audios.punch1.start();
+                break;
+            case 2:
+                Resources.audios.punch2.start();
+                break;
+            case 3:
+                Resources.audios.punch3.start();
+                break;
+        }
+    }
+    // Collision
+    checkCollision() {
+        if (Date.now() - this.invinStartTime > this.invinDur) {
+            this.status.isInvincible = false;
+        }
+        if (this.status.isDashing || this.status.isUsingUlt) {
+            return;
+        }
+        for (let enemy of this.game.enemies) {
+            // do sounds
+            const colStatus = this.collisionBox.checkBoxCollision(enemy.collisionBox);
+            if (colStatus.collided) {
+                this.status.canMove = true;
+                enemy.status.canMove = true;
+                if (colStatus.LB || colStatus.LT) {
+                    this.knockBackDir = -1;
+                    enemy.knockBackDir = 1;
+                }
+                else if (colStatus.RB || colStatus.RT) {
+                    this.knockBackDir = 1;
+                    enemy.knockBackDir = -1;
+                }
+                if (this.status.isAttacking) {
+                    this.playRandomPunchSound();
+                    enemy.startKnockBack();
+                    enemy.knockBack();
+                    enemy.currHP -= this.atkDamage;
+                    if (enemy.status.isAttacking && !this.status.isInvincible) {
+                        this.startKnockBack();
+                        this.knockBack();
+                        this.currHP -= enemy.atkDamage * enemy.atkDamageMultiplier;
+                    }
+                    this.endAttack();
+                }
+                else {
+                    if (this.status.isInvincible) {
+                        return;
+                    }
+                    this.playRandomPunchSound();
+                    if (enemy.status.isAttacking) {
+                        this.startKnockBack();
+                        this.knockBack();
+                        this.currHP -= enemy.atkDamage * enemy.atkDamageMultiplier;
+                    }
+                    else {
+                        this.startKnockBack();
+                        this.knockBack();
+                        this.currHP -= enemy.atkDamage;
+                    }
+                }
+            }
+        }
+    }
+    checkStatus() {
         if (this.status.isUsingUlt) {
             this.useUlt();
             return true;
         }
-        if (this.status.isAttacking) {
-            this.attack();
+        if (this.status.isGettingKnockBack) {
+            this.knockBack();
             return true;
         }
-        if (this.status.isDashing) {
+        if (this.status.isAttacking) {
+            this.attack();
+        }
+        else if (this.status.isDashing) {
             this.dash();
-            return true;
         }
         if (this.status.isJumping) {
             this.jump();
-            if (this.checkAttackKeyPress()) {
-                if (this.startAttack()) {
-                    this.attack();
-                }
-            }
-            else if (this.checkDashKeyPress()) {
-                if (this.startDash()) {
-                    this.dash();
-                }
-            }
-            return true;
         }
         return false;
     }
     checkKeyPress() {
-        if (this.checkUltKeyPress()) {
+        if (this.checkUltKeyPress() && !this.status.isDashing && !this.status.isAttacking) {
             if (this.startUlt()) {
                 this.useUlt();
             }
             return;
         }
-        if (this.checkAttackKeyPress()) {
+        if (this.checkAttackKeyPress() && !this.status.isAttacking && !this.status.isDashing) {
             if (this.startAttack()) {
                 this.attack();
             }
             return;
         }
-        if (this.checkDashKeyPress()) {
+        if (this.checkDashKeyPress() && !this.status.isDashing && !this.status.isAttacking) {
             if (this.startDash()) {
                 this.dash();
             }
             return;
         }
-        if (this.checkJumpKeyPress()) {
-            if (this.startJump()) {
-                this.jump();
-            }
+        if (this.checkJumpKeyPress() && !this.status.isDashing && !this.status.isAttacking && !this.status.isJumping) {
+            this.status.isJumping = true;
+            this.jump();
             return;
         }
     }
-    checkEnemyCollision() {
-        for (let enemy of this.game.enemies) {
-        }
-    }
-    restrictPos() {
+    restrictXPos() {
         if (this.x < 0) {
             this.x = 0;
         }
@@ -314,31 +432,59 @@ export class Player {
         }
     }
     drawStats() {
-        this.HPBar.drawBar(this.currHP, this.maxHP);
-        this.UltGaugeBar.drawBar(this.currUltGauge, this.maxUltGauge);
+        this.HPBar.draw(this.currHP, this.maxHP, true, true);
+        this.UltGaugeBar.draw(this.currUltGauge, this.maxUltGauge, true, true);
+    }
+    blinkPlayer() {
+        const currTime = Date.now();
+        if (currTime - this.blinkOpaChangeTime > this.blinkFreq) {
+            this.blinkOpaChangeTime = currTime;
+            if (this.isOpaque) {
+                this.isOpaque = false;
+            }
+            else {
+                this.isOpaque = true;
+            }
+        }
+        if (this.isOpaque) {
+            this.ctx.globalAlpha = 1;
+        }
+        else {
+            this.ctx.globalAlpha = this.blinkOpacity;
+        }
     }
     drawCharacter() {
+        this.ctx.save();
         if (this.dir == -1) {
-            this.ctx.save();
             this.ctx.translate(this.x * 2 + this.img.width, 0);
             this.ctx.scale(this.dir, 1);
+        }
+        // make transparent while dashing
+        if (this.status.isDashing) {
+            this.ctx.globalAlpha = this.blinkOpacity;
+        }
+        // blink while invincible
+        if (this.status.isInvincible) {
+            this.blinkPlayer();
+        }
+        if (!this.status.isDashing && !this.status.isInvincible) {
+            this.ctx.globalAlpha = 1;
         }
         this.ctx.drawImage(this.img, this.x, this.y, this.img.width, this.img.height);
         this.ctx.restore();
     }
     render() {
-        // if (this.status.canAct) {
-        if (!this.checkAction()) {
+        if (!this.checkStatus()) {
             this.checkKeyPress();
         }
-        // }
-        if (this.status.canMove) {
-            this.move();
-        }
-        // if (this.status.isJumping && !this.status.isAttacking && !this.status.isDashing) {
-        //     // check jump or dash key
-        // }
-        this.restrictPos();
+        // x position
+        this.move();
+        this.restrictXPos();
+        // y position
+        this.checkOffGround();
+        this.applyGravity();
+        this.collisionBox.update(this.x, this.y);
+        this.checkCollision();
         this.drawCharacter();
         this.drawStats();
     }
