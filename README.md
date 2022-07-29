@@ -1,5 +1,5 @@
 # A Game Featuring Samuel Jackson
-## No longer maintained
+This game is no longer maintained
 
 [Click this link to Play](https://soobakjonmat.github.io/A-Game-Featuring-Samuel-Jackson/)
 
